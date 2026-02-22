@@ -1,5 +1,7 @@
+from gradient_descent import GD
+import numpy as np
 
-def queryFunction(functions):
+def queryFunction():
     """
     This function asks the user to select a function from the list of functions and returns the selected function.
      
@@ -7,9 +9,12 @@ def queryFunction(functions):
         functions (list): A list of functions to choose from.    
 
     Returns:
+        optimizer (GD): The Gradient Descent optimizer object initialized with the selected function.
         function (object): The selected function object.
     """
     # Show the user the list of functions to choose from
+    functions = ["Sphere", "Cigar", "Rosenbrock"]
+
     print("Seleccione una función:")
     for i, func in enumerate(functions):
         print(f"{i + 1}. {func}")
@@ -23,12 +28,16 @@ def queryFunction(functions):
     match(choice):
         case 1:
             from functions.sphere import Sphere
-            function = Sphere()
+            function = Sphere(2)
+            optimizer = GD(function, 0.25, 1000)
+
         case 2:
             from functions.cigar import Cigar
-            function = Cigar()
+            function = Cigar(2)
+            optimizer = GD(function, 0.1e-7, 100000)
         case 3:
             from functions.rosenbrock import Rosenbrock
-            function = Rosenbrock()
+            function = Rosenbrock(2)
+            optimizer = GD(function, 0.001, 5000)
 
-    return function
+    return optimizer, function
