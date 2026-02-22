@@ -15,13 +15,14 @@ def queryFunction():
     # Show the user the list of functions to choose from
     functions = ["Sphere", "Cigar", "Rosenbrock"]
 
-    print("Seleccione una función:")
+    print("\nSeleccione una función:")
     for i, func in enumerate(functions):
         print(f"{i + 1}. {func}")
+    print(f"{len(functions) + 1}. Salir")
 
     # Ask the user to select a function
-    choice = int(input("Ingrese el número de la función: "))
-    while choice < 1 or choice > len(functions):
+    choice = int(input("\nIngrese el número de la función: "))
+    while choice < 1 or choice > len(functions) + 1:
         print("Opción no válida. Intente de nuevo.")
         choice = int(input("Ingrese el número de la función: "))
 
@@ -39,5 +40,8 @@ def queryFunction():
             from functions.rosenbrock import Rosenbrock
             function = Rosenbrock(2)
             optimizer = GD(function, 0.001, 5000)
+        case 4:
+            print("Saliendo del programa.")
+            exit()
 
     return optimizer, function

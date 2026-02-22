@@ -45,9 +45,10 @@ class Function(ABC):
 
         # Graficar superficie 3D
         fig = plt.figure(figsize=(12, 6))
-        ax = fig.add_subplot(121, projection='3d')
+        ax = fig.add_subplot(projection='3d')
         ax.plot_surface(X1, X2, Z, cmap='viridis', edgecolor='none')
-        ax.set_title(f"{title} - Superficie 3D")
-        ax.set_xlabel("x1")
-        ax.set_ylabel("x2")
+        ax.set_title(f'Superficie 3D de {title}')
+        ax.set_xlabel('x1')
+        ax.set_ylabel('x2')
+        ax.set_zlabel('f(x1, x2)')
         plt.show()
