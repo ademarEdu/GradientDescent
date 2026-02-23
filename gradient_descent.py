@@ -75,7 +75,7 @@ class GD:
         x = [step[0] for step in self.steps]
         y = [step[1] for step in self.steps]
 
-        # Create the canvas with the heatmap and contour lines of the function
+        # Get the values of the function (Z) with respect to an X1 X2 Plane
         n = 100
         x1 = np.linspace(self.function.dominio[0], self.function.dominio[1], n)
         x2 = np.linspace(self.function.dominio[0], self.function.dominio[1], n)
@@ -85,14 +85,14 @@ class GD:
             for j in range(n):
                 Z[i, j] = self.function.Eval(np.array([X1[i, j], X2[i, j]]))
 
-        # add t
+        # add the heatmap and contour lines to the canvas
         cm = plt.cm.get_cmap('viridis')
         plt.scatter(X1, X2, c=Z, cmap=cm)
         cp = plt.contour(X1, X2, Z, colors='white')
         plt.clabel(cp, inline=True, fontsize=8)
 
         # Add the path taken by the optimizer to the canvas
-        plt.plot(x, y, marker='o')
+        plt.plot(x, y, marker='o', color='orange')
 
         # Set the title and labels of the axes
         plt.title('Path taken by the Gradient Descent optimizer')

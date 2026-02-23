@@ -3,7 +3,7 @@ import sys
 
 if __name__ == "__main__":
     # Set cli to True if the command line interface is desired
-    cli = False
+    cli = True
     if cli:
         from cli.runCli import runCli
         runCli()
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # argv[1] int = function to optimize (1 for Sphere, 2 for Cigar, 3 for Rosenbrock)
     # argv[2] float = alpha (step size)
     # argv[3] int = m_iterations (maximum number of iterations)
-    # argv[4] whether to plot the gradient descent path (1 for yes, 0 for no)
+    # argv[4] bool = whether to plot the gradient descent path (1 for yes, 0 for no)
 
     # Values recommended for the optimizer settings are:
     # Sphere: alpha = 0.25, m_iterations = 1000
