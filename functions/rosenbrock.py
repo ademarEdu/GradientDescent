@@ -6,6 +6,7 @@ class Rosenbrock(Function):
     def __init__(self, dimension):
         super().__init__(dimension)
         self.dominio = (-2,2)
+        self.minimum = np.ones(dimension)
 
     def Eval(self, x):
         suma = 0

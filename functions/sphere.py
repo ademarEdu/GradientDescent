@@ -5,6 +5,7 @@ class Sphere(Function):
     def __init__(self, dimension):
         super().__init__(dimension)
         self.dominio = (-2,2)
+        self.minimum = np.zeros(dimension)
 
     def Eval(self, x):
         return np.sum(x**2)

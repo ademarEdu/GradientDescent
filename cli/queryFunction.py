@@ -30,7 +30,7 @@ def queryFunction():
         case 1:
             from functions.sphere import Sphere
             function = Sphere(2)
-            optimizer = GD(function, 0.25, 1000)
+            optimizer = GD(function, 0.5, 1000)
 
         case 2:
             from functions.cigar import Cigar

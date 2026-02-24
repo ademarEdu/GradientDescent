@@ -5,6 +5,7 @@ class Cigar(Function):
     def __init__(self, dimension):
         super().__init__(dimension)
         self.dominio = (-2,2)
+        self.minimum = np.zeros(dimension)
 
     def Eval(self, x):
         return x[0]**2 + 1e6*np.sum(x[1:]**2)
