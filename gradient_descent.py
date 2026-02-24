@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 class GD:
-    def __init__(self, function, alpha=0.25, m_iterations=100):
+    def __init__(self, function, alpha=0.25, m_iterations=100, max_grad_norm=1e3):
         """
         This object represents the Gradient Descent optimizer.
 
@@ -16,48 +16,60 @@ class GD:
         """
         self.alpha = alpha
         self.m_iterations = m_iterations
+        self.max_grad_norm = max_grad_norm
         self.function = function
-        self.steps = np.zeros((m_iterations, 2)) # this list will store all of the steps(2D vectors) takes by the optimizer
+        self.steps = np.zeros((m_iterations, function.dimension)) # this list will store all of the steps(2D vectors) takes by the optimizer
         self.n_steps = 0 # this variable will count the number of steps taken
         self.minimum = None # this variable will store the minimum found by the optimizer
 
-    def solve(self, initial_position=None):
+    def solve(self, initial_position):
         """
         Iteratively updates self.current_position to find an approximation to the minimum of the function. The variable self.minimum will store the approximated minimum after this function ends.
         
         Args:
-        initial_position (np array float64): Two dimensional array representing the initial position of the optimizer in the 2D plane. The array should be float64 type to avoid errors when performing calculations.
+        initial_position (np array float64): n dimensional array representing the initial position of the optimizer in the n-dimensional space. The array should be float64 type to avoid errors when performing calculations.
 
         Returns:
         None
         """
-        if initial_position is None:
-            # If the user does not provide an initial position, we will generate a random one within the domain of the function
-            initial_position = np.array([random.randrange(self.function.dominio[0], self.function.dominio[1]+1), random.randrange(self.function.dominio[0], self.function.dominio[1]+1)], float)
-        
-        self.current_position = initial_position
-        self.steps[0] = initial_position.copy()
+        self.current_position = initial_position.copy()
+        self.steps[0] = self.current_position.copy()
 
         i = 1
         while i < self.m_iterations:
-            if i != 1:
-                # If this is not the first step taken
-                if self.function.Eval(self.steps[i-1]) < self.function.Eval(self.current_position): 
-                    # If the value increases instead of decreasing, then we have reached a minimum
-                    self.minimum = self.steps[i-1].copy()
-                    break
+            # Condición de armijo
+            # if i != 1:
+            #     # If this is not the first step taken
+            #     if self.function.Eval(self.steps[i-1]) < self.function.Eval(self.current_position): 
+            #         # If the value increases instead of decreasing, then we have reached a minimum
+            #         self.minimum = self.steps[i-1].copy()
+            #         break
             
             # Takes a step in the direction of the negative gradient
-            if (self.function.Diff(self.current_position) != np.zeros(2)).all():
-                # If the gradient is zero, then we have reached a minimum (local or global)
-                gradient = self.function.Diff(self.current_position)
-                self.current_position += self.alpha * (-1*gradient)
-                self.steps[i] = self.current_position.copy()
-            else:
+            gradient = self.function.Diff(self.current_position)
+
+            if not np.all(np.isfinite(gradient)):
                 self.minimum = self.current_position.copy()
                 break
 
-            # If we have reached the maximum number of iterations, we will return the current position as the minimum
+            if gradient.any():
+                grad_norm = np.linalg.norm(gradient)
+                if grad_norm > self.max_grad_norm and grad_norm > 0:
+                    gradient = gradient * (self.max_grad_norm / grad_norm)
+
+                self.current_position += self.alpha * (-gradient)
+
+                if not np.all(np.isfinite(self.current_position)):
+                    self.minimum = self.steps[i-1].copy()
+                    break
+
+                self.steps[i] = self.current_position.copy()
+            else:
+                # If the gradient is zero, then we have reached a minimum (local or global)
+                self.minimum = self.current_position.copy()
+                break
+
+            # If we have reached the maximum number of iterations, we will save the current position as the minimum
             if i == self.m_iterations - 1:
                 self.minimum = self.current_position.copy()
 

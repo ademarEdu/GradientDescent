@@ -4,7 +4,7 @@ import numpy as np
 class Sphere(Function):
     def __init__(self, dimension):
         super().__init__(dimension)
-        self.dominio = (-600,300)
+        self.dominio = (-2,2)
 
     def Eval(self, x):
         return np.sum(x**2)

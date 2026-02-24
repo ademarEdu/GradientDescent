@@ -14,7 +14,7 @@ class Rosenbrock(Function):
         return suma
 
     def Diff(self, x):
-        grad = np.zeros(self.dimension)
+        grad = np.zeros(self.dimension, dtype=np.float64)
 
         for i in range(self.dimension):
             if i == 0:

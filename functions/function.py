@@ -26,7 +26,7 @@ class Function(ABC):
         Visualiza la función en 2D.
 
         Args:
-        n (int): Número de puntos en la malla.
+        n (int): Parámetro para ajustar la dimensión en la matriz de puntos que se graficarán. La dimemensión de la matriz será nxn.
         """
         import matplotlib.pyplot as plt
 
