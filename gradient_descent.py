@@ -1,8 +1,7 @@
 import numpy as np
-import random
 
 class GD:
-    def __init__(self, function, alpha=0.25, m_iterations=100, max_grad_norm=1e3):
+    def __init__(self, function, alpha=0.25, m_iterations=100, max_grad_norm=1e3, condition="Armijo", direction="Gradient"):
         """
         This object represents the Gradient Descent optimizer.
 
@@ -21,6 +20,14 @@ class GD:
         self.steps = np.zeros((m_iterations, function.dimension)) # this list will store all of the steps(2D vectors) takes by the optimizer
         self.n_steps = 0 # this variable will count the number of steps taken
         self.minimum = None # this variable will store the minimum found by the optimizer
+        if condition == "Armijo":
+            from conditions.armijo import armijo
+            self.condition = lambda i: armijo(self, i)
+
+        if direction == "Gradient":
+            self.direction = lambda x: -self.function.Diff(x)
+        if direction == "Newton":
+            self.direction = lambda x: -np.linalg.solve(self.function.Hess(x), self.function.Diff(x))
 
     def solve(self, initial_position):
         """
@@ -28,15 +35,21 @@ class GD:
         
         Args:
         initial_position (np array float64): n dimensional array representing the initial position of the optimizer in the n-dimensional space. The array should be float64 type to avoid errors when performing calculations.
+        tao (float): The stop 
 
         Returns:
         None
         """
+        self.steps = np.zeros((self.m_iterations, self.function.dimension))
         self.current_position = initial_position.copy()
         self.steps[0] = self.current_position.copy()
 
         i = 1
         while i < self.m_iterations:
+            alpha_k = self.alpha.copy()
+            hessian_k = self.function.Hess(self.current_position)
+            dir_k = self.direction(self.current_position)
+            
             # Condición de armijo
             # if i != 1:
             #     # If this is not the first step taken
@@ -77,6 +90,7 @@ class GD:
             i += 1
         
         self.n_steps = i
+        self.minimum = self.current_position.copy()
 
     def plot(self):
         """
@@ -84,8 +98,9 @@ class GD:
         """
         import matplotlib.pyplot as plt
         
-        x = [step[0] for step in self.steps]
-        y = [step[1] for step in self.steps]
+        path = self.steps[:self.n_steps + 1]
+        x = [step[0] for step in path]
+        y = [step[1] for step in path]
 
         # Get the values of the function (Z) with respect to an X1 X2 Plane
         n = 100
