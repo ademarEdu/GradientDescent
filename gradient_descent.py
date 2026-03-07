@@ -52,16 +52,18 @@ class GD:
         Args:
         initial_position (np array float64): n dimensional array representing the initial position of the optimizer in the n-dimensional space. The array should be float64 type to avoid errors when performing calculations.
 
+        tao (float): It is the stopping criterion for the optimization process. If we have reached a point where the norm of the gradient is less than or equal to tao, we will stop the optimization process and save the current position as the minimum.
+
+        ro (float): It is the reduction factor for the step size alpha. If the condition is not satisfied, alpha will be reduced by a factor of ro.
+        
         Returns:
         None
         """
         self.current_position = initial_position.copy()
         self.steps[0] = self.current_position.copy()
-        self.current_value = self.function.Eval(self.current_position)
-        self.current_gradient = self.function.Diff(self.current_position)
 
         i = 1
-        while i < self.m_iterations and np.linalg.norm(self.current_gradient) > tao:
+        while i < self.m_iterations and np.linalg.norm(self.function.Diff(self.current_position)) > tao:
             # Value of alpha at the current iteration
             # The value of self.alpha cant be altered because it has to be same in every iteration of this while loop
             a_k = self.alpha
@@ -74,7 +76,7 @@ class GD:
             self.steps[i] = self.current_position.copy()
             i += 1 # Increment the step counter
             # Reduce the value of alpha if ascending
-            while i < self.m_iterations and a_k > tao and self.condition(i):
+            while i < self.m_iterations and np.linalg.norm(self.function.Diff(self.current_position)) > tao and not self.condition(i):
                 a_k *= ro
                 self.current_position += a_k * p_k
                 self.steps[i] = self.current_position.copy()
@@ -91,8 +93,8 @@ class GD:
         """
         import matplotlib.pyplot as plt
         
-        x = [step[0] for step in self.steps]
-        y = [step[1] for step in self.steps]
+        x = [step[0] for step in self.steps[: self.n_steps]]
+        y = [step[1] for step in self.steps[: self.n_steps]]
 
         # Get the values of the function (Z) with respect to an X1 X2 Plane
         n = 100
