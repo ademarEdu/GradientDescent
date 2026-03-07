@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 class GD:
-    def __init__(self, function, alpha=0.25, m_iterations=100, max_grad_norm=1e3):
+    def __init__(self, function, alpha=0.25, m_iterations=100, max_grad_norm=1e3, method="Negative Gradient", condition="Armijo"):
         """
         This object represents the Gradient Descent optimizer.
 
@@ -22,7 +22,30 @@ class GD:
         self.n_steps = 0 # this variable will count the number of steps taken
         self.minimum = None # this variable will store the minimum found by the optimizer
 
-    def solve(self, initial_position):
+        # Choose the condition function based on the condition selected by the user
+        if condition == "Armijo":
+            from conditions.armijo import armijo
+            self.condition = lambda i: armijo(self, i)
+        elif condition == "Curvature":
+            from conditions.curvature import curvature
+            self.condition = lambda i: curvature(self, i)
+        elif condition == "Goldstein":
+            from conditions.goldstein import goldstein
+            self.condition = lambda i: goldstein(self, i)
+        elif condition == "Strong Wolfe":
+            from conditions.strong_wolfe import strong_wolfe
+            self.condition = lambda i: strong_wolfe(self, i)
+        elif condition == "Sufficient Decrease":
+            from conditions.sufficient_decrease import sufficient_decrease
+            self.condition = lambda i: sufficient_decrease(self, i)
+        
+        # Choose the direction function based on the method selected by the user
+        if method == "Negative Gradient":
+            self.direction = lambda x: -1*self.function.Diff(x)
+        elif method == "Newton":
+            self.direction = lambda x: -1*np.linalg.solve(self.function.DDiff(x), self.function.Diff(x))
+
+    def solve(self, initial_position, tao=10e-6, ro=0.8):
         """
         Iteratively updates self.current_position to find an approximation to the minimum of the function. The variable self.minimum will store the approximated minimum after this function ends.
         
@@ -34,48 +57,32 @@ class GD:
         """
         self.current_position = initial_position.copy()
         self.steps[0] = self.current_position.copy()
+        self.current_value = self.function.Eval(self.current_position)
+        self.current_gradient = self.function.Diff(self.current_position)
 
         i = 1
-        while i < self.m_iterations:
-            # Condición de armijo
-            # if i != 1:
-            #     # If this is not the first step taken
-            #     if self.function.Eval(self.steps[i-1]) < self.function.Eval(self.current_position): 
-            #         # If the value increases instead of decreasing, then we have reached a minimum
-            #         self.minimum = self.steps[i-1].copy()
-            #         break
-            
-            # Takes a step in the direction of the negative gradient
-            gradient = self.function.Diff(self.current_position)
-
-            if not np.all(np.isfinite(gradient)):
-                self.minimum = self.current_position.copy()
+        while i < self.m_iterations and np.linalg.norm(self.current_gradient) > tao:
+            # Value of alpha at the current iteration
+            # The value of self.alpha cant be altered because it has to be same in every iteration of this while loop
+            a_k = self.alpha
+            p_k = self.direction(self.current_position)
+            # If the direction is not finite, we will save the current position as the minimum to avoid errors in the next iterations
+            if not np.all(np.isfinite(p_k)):
                 break
-
-            if gradient.any():
-                grad_norm = np.linalg.norm(gradient)
-                if grad_norm > self.max_grad_norm and grad_norm > 0:
-                    gradient = gradient * (self.max_grad_norm / grad_norm)
-
-                self.current_position += self.alpha * (-gradient)
-
-                if not np.all(np.isfinite(self.current_position)):
-                    self.minimum = self.steps[i-1].copy()
-                    break
-
+            # Takes a step in the specified direction
+            self.current_position += a_k * p_k
+            self.steps[i] = self.current_position.copy()
+            i += 1 # Increment the step counter
+            # Reduce the value of alpha if ascending
+            while i < self.m_iterations and a_k > tao and self.condition(i):
+                a_k *= ro
+                self.current_position += a_k * p_k
                 self.steps[i] = self.current_position.copy()
-            else:
-                # If the gradient is zero, then we have reached a minimum (local or global)
-                self.minimum = self.current_position.copy()
-                break
+                i += 1
 
-            # If we have reached the maximum number of iterations, we will save the current position as the minimum
-            if i == self.m_iterations - 1:
-                self.minimum = self.current_position.copy()
-
-            # Increment the step counter
-            i += 1
-        
+        # If we have reached the maximum number of iterations, we will save the current position as the minimum
+        if not self.minimum:
+            self.minimum = self.current_position.copy()
         self.n_steps = i
 
     def plot(self):

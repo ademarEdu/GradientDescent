@@ -1,6 +1,43 @@
 from gradient_descent import GD
 import numpy as np
 
+def queryCondition(conditions):
+    # Show the user the list of conditions to choose from
+    print("\nSeleccione una condicion:")
+    for i, condition in enumerate(conditions):
+        print(f"{i + 1}. {condition}")
+
+    # Ask the user to select a condition
+    condition_choice = int(input("\nIngrese el número del condición: "))
+    while condition_choice < 1 or condition_choice > len(conditions):
+        print("Opción no válida. Intente de nuevo.")
+        condition_choice = int(input("Ingrese el número del método: "))
+
+    return conditions[condition_choice - 1]
+
+def queryMethod(methods):
+    """
+    This function asks the user to select an optimization method from the list of methods and returns the selected method.
+
+    Args:
+        methods (list): A list of optimization methods to choose from.
+
+    Returns:
+        method_choice (int): The number corresponding to the selected optimization method.
+    """
+    # Show the user the list of optimization methods to choose from
+    print("\nSeleccione un método de optimización:")
+    for i, method in enumerate(methods):
+        print(f"{i + 1}. {method}")
+
+    # Ask the user to select an optimization method
+    method_choice = int(input("\nIngrese el número del método: "))
+    while method_choice < 1 or method_choice > len(methods):
+        print("Opción no válida. Intente de nuevo.")
+        method_choice = int(input("Ingrese el número del método: "))
+
+    return method_choice
+
 def queryFunction():
     """
     This function asks the user to select a function from the list of functions and returns the selected function.
@@ -13,7 +50,9 @@ def queryFunction():
         function (object): The selected function object.
     """
     # Show the user the list of functions to choose from
-    functions = ["Sphere", "Cigar", "Rosenbrock"]
+    functions = ["Sphere", "Cigar", "Rosenbrock", "Griewangk"]
+    methods = ["Negative Gradient", "Newton"]
+    conditions = ["Armijo", "Curvature", "Goldstein", "Strong Wolfe", "Sufficient Decrease"]
 
     print("\nSeleccione una función:")
     for i, func in enumerate(functions):
@@ -30,17 +69,40 @@ def queryFunction():
         case 1:
             from functions.sphere import Sphere
             function = Sphere(2)
-            optimizer = GD(function, 0.5, 1000)
-
+            method_choice = queryMethod(methods)
+            condition_choice = queryCondition(conditions)
+            if method_choice == 1:
+                optimizer = GD(function, 0.1, 1000, method=methods[method_choice - 1], condition=condition_choice)
+            else:
+                optimizer = GD(function, 0.7, 100, method=methods[method_choice - 1], condition=condition_choice)
         case 2:
             from functions.cigar import Cigar
             function = Cigar(2)
-            optimizer = GD(function, 0.1e-7, 100000)
+            method_choice = queryMethod(methods)
+            condition_choice = queryCondition(conditions)
+            if method_choice == 1:
+                optimizer = GD(function, 0.1e-7, 100000, method=methods[method_choice - 1], condition=condition_choice)
+            else: 
+                optimizer = GD(function, 0.1, 1000, method=methods[method_choice - 1], condition=condition_choice)
         case 3:
             from functions.rosenbrock import Rosenbrock
             function = Rosenbrock(2)
-            optimizer = GD(function, 0.001, 5000)
+            method_choice = queryMethod(methods)
+            condition_choice = queryCondition(conditions)
+            if method_choice == 1:
+                optimizer = GD(function, 0.001, 5000, method=methods[method_choice - 1], condition=condition_choice)
+            else:
+                optimizer = GD(function, 0.1, 500, method=methods[method_choice - 1], condition=condition_choice)
         case 4:
+            from functions.griewangk import Griewangk
+            function = Griewangk(2)
+            method_choice = queryMethod(methods)
+            condition_choice = queryCondition(conditions)
+            if method_choice == 1:
+                optimizer = GD(function, 0.1, 10000, method=methods[method_choice - 1], condition=condition_choice)
+            else:
+                optimizer = GD(function, 0.7, 1000, method=methods[method_choice - 1], condition=condition_choice)
+        case 5:
             print("Saliendo del programa.")
             exit()
 
