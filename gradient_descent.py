@@ -1,5 +1,4 @@
 import numpy as np
-import random
 
 class GD:
     def __init__(self, function, alpha=0.25, m_iterations=100, max_grad_norm=1e3, method="Negative Gradient", condition="Armijo"):
@@ -25,19 +24,20 @@ class GD:
         # Choose the condition function based on the condition selected by the user
         if condition == "Armijo":
             from conditions.armijo import armijo
-            self.condition = lambda i: armijo(self, i)
-        elif condition == "Curvature":
-            from conditions.curvature import curvature
-            self.condition = lambda i: curvature(self, i)
-        elif condition == "Goldstein":
-            from conditions.goldstein import goldstein
-            self.condition = lambda i: goldstein(self, i)
-        elif condition == "Strong Wolfe":
-            from conditions.strong_wolfe import strong_wolfe
-            self.condition = lambda i: strong_wolfe(self, i)
+            self.condition = lambda f_k, grad_k, a_k, p_k: armijo(self.function, self.current_position, f_k, grad_k, a_k, p_k)
         elif condition == "Sufficient Decrease":
             from conditions.sufficient_decrease import sufficient_decrease
-            self.condition = lambda i: sufficient_decrease(self, i)
+            self.condition = lambda f_k, grad_k, a_k, p_k: sufficient_decrease(self.function, self.current_position, f_k, grad_k, a_k, p_k)
+        elif condition == "Curvature":
+            from conditions.curvature import curvature
+            self.condition = lambda f_k, grad_k, a_k, p_k: curvature(self.function, self.current_position, f_k, grad_k, a_k, p_k)
+        elif condition == "Strong Wolfe":
+            from conditions.sufficient_decrease import sufficient_decrease
+            from conditions.curvature import curvature
+            self.condition = lambda f_k, grad_k, a_k, p_k: sufficient_decrease(self.function, self.current_position, f_k, grad_k, a_k, p_k) and curvature(self.function, self.current_position, f_k, grad_k, a_k, p_k)
+        elif condition == "Goldstein":
+            from conditions.goldstein import goldstein
+            self.condition = lambda f_k, grad_k, a_k, p_k: goldstein(self.function, self.current_position, f_k, grad_k, a_k, p_k)
         
         # Choose the direction function based on the method selected by the user
         if method == "Negative Gradient":
@@ -45,7 +45,7 @@ class GD:
         elif method == "Newton":
             self.direction = lambda x: -1*np.linalg.solve(self.function.DDiff(x), self.function.Diff(x))
 
-    def solve(self, initial_position, tao=10e-6, ro=0.8):
+    def solve(self, initial_position, tao=10e-6, ro=0.75):
         """
         Iteratively updates self.current_position to find an approximation to the minimum of the function. The variable self.minimum will store the approximated minimum after this function ends.
         
@@ -66,25 +66,35 @@ class GD:
         while i < self.m_iterations and np.linalg.norm(self.function.Diff(self.current_position)) > tao:
             # Value of alpha at the current iteration
             # The value of self.alpha cant be altered because it has to be same in every iteration of this while loop
+            f_k = self.function.Eval(self.current_position)
             a_k = self.alpha
             p_k = self.direction(self.current_position)
+            g_k = self.function.Diff(self.current_position)
+
             # If the direction is not finite, we will save the current position as the minimum to avoid errors in the next iterations
             if not np.all(np.isfinite(p_k)):
                 break
-            # Takes a step in the specified direction
-            self.current_position += a_k * p_k
-            self.steps[i] = self.current_position.copy()
-            i += 1 # Increment the step counter
-            # Reduce the value of alpha if ascending
-            while i < self.m_iterations and np.linalg.norm(self.function.Diff(self.current_position)) > tao and not self.condition(i):
+
+            # Backtracking
+            # Reduce the value of alpha if it is not in an acceptable region
+            j = 0
+            # If the value of ro = 0.75 = 1.33^-j
+            # the compunded of ro value at j = 100 is around 4.11e-13
+            while j < 100 and not self.condition(f_k, g_k, a_k, p_k):
                 a_k *= ro
-                self.current_position += a_k * p_k
-                self.steps[i] = self.current_position.copy()
-                i += 1
+                j += 1
+
+            if np.linalg.norm(a_k*p_k) < tao:
+                break
+
+            # Takes a step in the specified direction with an acceptable value of alpha
+            self.current_position += a_k * p_k
+            self.steps[i] = self.current_position
+            i += 1 # Increment the step counter
 
         # If we have reached the maximum number of iterations, we will save the current position as the minimum
         if not self.minimum:
-            self.minimum = self.current_position.copy()
+            self.minimum = self.current_position
         self.n_steps = i
 
     def plot(self):

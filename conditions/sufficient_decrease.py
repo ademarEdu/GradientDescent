@@ -1,14 +1,6 @@
 # Diana
 import numpy as np
 
-def sufficient_decrease(optimizer, i, c1=1e-4):
-    function = optimizer.function
-    x = optimizer.current_position
-    p = optimizer.direction(x)
-    alpha = optimizer.alpha
-    grad = optimizer.function.Diff(x)
-
+def sufficient_decrease(function, x_k, f_k, grad_k, a_k, p_k, c1=1e-4):
     # f(x + a*p) <= f(x) + c1 * a * grad^T * p
-    f_new = function.Eval(x + alpha * p)
-    f_old = function.Eval(x)
-    return f_new <= f_old + c1 * alpha * np.dot(grad, p)
+    return function.Eval(x_k + a_k * p_k) <= f_k + c1*a_k*np.dot(grad_k, p_k)

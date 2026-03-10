@@ -1,17 +1,6 @@
 # Diana
 import numpy as np
 
-def curvature(optimizer, i, c2=0.9):
-    function = optimizer.function
-    x = optimizer.current_position
-    p = optimizer.direction(x)
-    alpha = optimizer.alpha
-    grad_old = optimizer.function.Diff(optimizer.steps[i-1])
-
-    # grad(x + a*p)^T * p >= c2 * grad(x)^T * p
-    grad_new = function.Diff(x + alpha * p)
-    return np.dot(grad_new, p) >= c2 * np.dot(grad_old, p)
-
-
-# def check_curvature_condition(function, x, p, alpha, grad_old, c2=0.9):
-    
+def curvature(function, x_k, f_k, grad_k, a_k, p_k, c2=0.9):
+    # grad(x + a*p)^T * p < c2 * grad(x)^T * p
+    return np.dot(function.Diff(x_k + a_k*p_k), p_k) < c2 * np.dot(grad_k, p_k)

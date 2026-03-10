@@ -20,9 +20,8 @@ def runCli():
         opt.solve(x0)
         print(f"El mínimo aproximado es: {opt.minimum}")
         print(f"El gradiente en el mínimo es: {function.Diff(opt.minimum)}")
-        print(f"El ultimo paso es: {opt.steps[opt.n_steps-1]}")
         print(f"El numero de pasos tomados es: {opt.n_steps}")
         print(f"El punto inicial fue: {x0}")
         # # Start plotting the results
         opt.plot() # This method plots the path(series of points) taken by the optimizer in the 2D plane
-        # function.Plot_2D(n=200) # This method plots the function
+        function.Plot_2D(n=200) # This method plots the function

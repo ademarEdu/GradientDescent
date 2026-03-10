@@ -2,6 +2,15 @@ from gradient_descent import GD
 import numpy as np
 
 def queryCondition(conditions):
+    """
+    This function asks the user to choose a condition for the optimization process from the list of conditions and returns the string selected.
+
+    Args:
+        conditions (list): A list of conditions to choose from. The list must contain strings of all the options.
+
+    Returns:
+        condition_choice (str): The string corresponding to the selected condition.
+    """
     # Show the user the list of conditions to choose from
     print("\nSeleccione una condicion:")
     for i, condition in enumerate(conditions):
@@ -52,7 +61,7 @@ def queryFunction():
     # Show the user the list of functions to choose from
     functions = ["Sphere", "Cigar", "Rosenbrock", "Griewangk"]
     methods = ["Negative Gradient", "Newton"]
-    conditions = ["Armijo", "Curvature", "Goldstein", "Strong Wolfe", "Sufficient Decrease"]
+    conditions = ["Armijo", "Sufficient Decrease", "Curvature", "Strong Wolfe", "Goldstein"]
 
     print("\nSeleccione una función:")
     for i, func in enumerate(functions):
@@ -71,37 +80,25 @@ def queryFunction():
             function = Sphere(2)
             method_choice = queryMethod(methods)
             condition_choice = queryCondition(conditions)
-            if method_choice == 1:
-                optimizer = GD(function, 0.1, 1000, method=methods[method_choice - 1], condition=condition_choice)
-            else:
-                optimizer = GD(function, 0.7, 100, method=methods[method_choice - 1], condition=condition_choice)
+            optimizer = GD(function, 0.5, 1000, method=methods[method_choice - 1], condition=condition_choice)
         case 2:
             from functions.cigar import Cigar
             function = Cigar(2)
             method_choice = queryMethod(methods)
             condition_choice = queryCondition(conditions)
-            if method_choice == 1:
-                optimizer = GD(function, 0.1e-7, 100000, method=methods[method_choice - 1], condition=condition_choice)
-            else: 
-                optimizer = GD(function, 0.1, 1000, method=methods[method_choice - 1], condition=condition_choice)
+            optimizer = GD(function, 0.5, 10000, method=methods[method_choice - 1], condition=condition_choice)
         case 3:
             from functions.rosenbrock import Rosenbrock
             function = Rosenbrock(2)
             method_choice = queryMethod(methods)
             condition_choice = queryCondition(conditions)
-            if method_choice == 1:
-                optimizer = GD(function, 0.001, 5000, method=methods[method_choice - 1], condition=condition_choice)
-            else:
-                optimizer = GD(function, 0.1, 500, method=methods[method_choice - 1], condition=condition_choice)
+            optimizer = GD(function, 0.1, 5000, method=methods[method_choice - 1], condition=condition_choice)
         case 4:
             from functions.griewangk import Griewangk
             function = Griewangk(2)
             method_choice = queryMethod(methods)
             condition_choice = queryCondition(conditions)
-            if method_choice == 1:
-                optimizer = GD(function, 0.1, 10000, method=methods[method_choice - 1], condition=condition_choice)
-            else:
-                optimizer = GD(function, 0.7, 1000, method=methods[method_choice - 1], condition=condition_choice)
+            optimizer = GD(function, 3, 10000, method=methods[method_choice - 1], condition=condition_choice)
         case 5:
             print("Saliendo del programa.")
             exit()
