@@ -6,6 +6,7 @@ class Griewangk (Function):
     def __init__(self, dimension):
         super().__init__(dimension)
         self.dominio = (-15, 15)
+        self.minimum = np.zeros(dimension)
 
     def Eval(self, x):
         x = np.asarray(x, dtype=float)

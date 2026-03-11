@@ -16,7 +16,7 @@ def generate_table(name, dimension, data, output_path):
     \\vspace{{2mm}}
     \\begin{{tabular}}{{r|ccc}}
         \\hline
-        $\\alpha$ & Accuracy & Performance \\\\ [0.5ex]
+        $\\$ Condition & Accuracy & Performance \\\\ [0.5ex]
         \\hline
 table_data
         \\hline
@@ -26,8 +26,8 @@ table_data
 
     # Generate the rows of the table
     rows = ""
-    for alpha, mse, performance in data:
-        rows += f"        {alpha:.2e} & {mse:.2e} & {performance:.2f} \\\\\n"
+    for condition, mse, performance in data:
+        rows += f"        {condition} & {mse:.2e} & {performance:.2f} \\\\\n"
     
     # Insert the rows into the template
     table = template.replace("table_data", rows)

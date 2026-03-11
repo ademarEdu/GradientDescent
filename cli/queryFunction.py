@@ -80,7 +80,7 @@ def queryFunction():
             function = Sphere(2)
             method_choice = queryMethod(methods)
             condition_choice = queryCondition(conditions)
-            optimizer = GD(function, 0.5, 1000, method=methods[method_choice - 1], condition=condition_choice)
+            optimizer = GD(function, 0.7, 1000, method=methods[method_choice - 1], condition=condition_choice)
         case 2:
             from functions.cigar import Cigar
             function = Cigar(2)

@@ -23,36 +23,35 @@ if __name__ == "__main__":
 
     # Creation of tables
 
-    f_options = [2]
+    f_options = [4]
     dimensions = [2, 5, 10, 15, 20]
+    conditions = ["Armijo", "Sufficient Decrease", "Curvature", "Strong Wolfe", "Goldstein"]
+    m_iterations = 10000
+    alpha = 3
 
     # --------------------------------------------------
     # Function selection
     for f_option in f_options:
         for n in dimensions:   
-            table_data = np.zeros((10,3))
+            table_data = []
             # Create the appropriate function object
             match(f_option):
                 case 1:
                     from functions.sphere import Sphere
                     function = Sphere(n)
-                    a_options = [1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-                    m_iterations = 100
                 case 2:
                     from functions.cigar import Cigar
                     function = Cigar(n)
-                    a_options = [0.1e-6, 0.75e-7, 0.5e-7, 0.25e-7, 0.1e-7, 0.75e-8, 0.5e-8, 0.25e-8, 0.1e-8, 0.01e-8]
-                    m_iterations = 5000
                 case 3:
                     from functions.rosenbrock import Rosenbrock
                     function = Rosenbrock(n)
-                    a_options = [0.0015, 0.0014, 0.0013, 0.0012, 0.0011, 0.001, 0.00099, 0.00098, 0.00097, 0.00096]
-                    m_iterations = 5000
-
+                case 4:
+                    from functions.griewangk import Griewangk
+                    function = Griewangk(n)
             j = 0 # this variable will count the number of alpha values tested (i.e. 0 to 10)
-            for alpha in a_options:
+            for condition in conditions:
                 # Optimizer
-                opt = GD(function, alpha, m_iterations)
+                opt = GD(function, alpha, m_iterations, method="Newton", condition=condition)
                 
                 # Generate random initial position within the domain of the function
                 x0 = np.random.randint(function.dominio[0], function.dominio[1]+1, n).astype(np.float64)
@@ -72,7 +71,8 @@ if __name__ == "__main__":
                 mse /= n_iterations
                 performance /= n_iterations
 
-                table_data[j] = np.array([alpha, mse, performance])
+                table_data.append([condition, mse, performance])
                 j += 1 # Increment the alpha counter
                 
             generate_table(function.__class__.__name__, n, table_data, "tables.txt")
+            print(f"Table for {function.__class__.__name__} with {n} dimensions generated.")

@@ -93,8 +93,7 @@ class GD:
             i += 1 # Increment the step counter
 
         # If we have reached the maximum number of iterations, we will save the current position as the minimum
-        if not self.minimum:
-            self.minimum = self.current_position
+        self.minimum = self.current_position
         self.n_steps = i
 
     def plot(self):
