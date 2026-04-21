@@ -13,7 +13,7 @@ def runCli():
         opt, function = queryFunction()
         # Start the optimization process
         x0 = np.random.randint(function.dominio[0], function.dominio[1]+1, function.dimension).astype(np.float64)
-        
+
         while not x0.any():
             # if the initial position is 0 we will generate a new one
             x0 = np.random.randint(function.dominio[0], function.dominio[1]+1, function.dimension).astype(np.float64)
