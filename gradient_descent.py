@@ -59,6 +59,7 @@ class GD:
         Returns:
         None
         """
+        # This is a trial
         self.current_position = initial_position.copy()
         self.steps[0] = self.current_position.copy()
 
