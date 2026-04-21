@@ -51,7 +51,7 @@ def queryFunction():
     """
     # Show the user the list of functions to choose from
     functions = ["Sphere", "Cigar", "Rosenbrock", "Griewangk"]
-    methods = ["Negative Gradient", "Newton"]
+    methods = ["Negative Gradient", "Newton", "BFGS"]
     conditions = ["Armijo", "Curvature", "Goldstein", "Strong Wolfe", "Sufficient Decrease"]
 
     print("\nSeleccione una función:")

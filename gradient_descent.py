@@ -21,6 +21,7 @@ class GD:
         self.steps = np.zeros((m_iterations, function.dimension)) # this list will store all of the steps(2D vectors) takes by the optimizer
         self.n_steps = 0 # this variable will count the number of steps taken
         self.minimum = None # this variable will store the minimum found by the optimizer
+        self.method = method
 
         # Choose the condition function based on the condition selected by the user
         if condition == "Armijo":
@@ -44,6 +45,8 @@ class GD:
             self.direction = lambda x: -1*self.function.Diff(x)
         elif method == "Newton":
             self.direction = lambda x: -1*np.linalg.solve(self.function.DDiff(x), self.function.Diff(x))
+        elif method == "BFGS":
+            self.direction = None # We will implement this method in the future
 
     def solve(self, initial_position, tao=10e-6, ro=0.8):
         """
@@ -60,25 +63,63 @@ class GD:
         self.current_value = self.function.Eval(self.current_position)
         self.current_gradient = self.function.Diff(self.current_position)
 
+        #Inicialize the BFGS method
+        if self.method == "BFGS":
+            self.B_k = np.eye(self.function.dimension) # Initial approximation of the inverse Hessian matrix for BFGS method
+
         i = 1
         while i < self.m_iterations and np.linalg.norm(self.current_gradient) > tao:
+
+
+            #Determination of P_k direction
+            if self.method == "BFGS":
+                p_k = -1*np.dot(self.B_k, self.current_gradient)
+            else:
+                p_k = self.direction(self.current_position)
+
+
             # Value of alpha at the current iteration
             # The value of self.alpha cant be altered because it has to be same in every iteration of this while loop
             a_k = self.alpha
-            p_k = self.direction(self.current_position)
+            
             # If the direction is not finite, we will save the current position as the minimum to avoid errors in the next iterations
             if not np.all(np.isfinite(p_k)):
                 break
+
+            #Safe current values after the step
+            x_old = self.current_position.copy()
+            g_old = self.current_gradient.copy()
+
             # Takes a step in the specified direction
             self.current_position += a_k * p_k
+
             self.steps[i] = self.current_position.copy()
             i += 1 # Increment the step counter
             # Reduce the value of alpha if ascending
             while i < self.m_iterations and a_k > tao and self.condition(i):
                 a_k *= ro
-                self.current_position += a_k * p_k
+                self.current_position = x_old + a_k * p_k
                 self.steps[i] = self.current_position.copy()
                 i += 1
+
+            # Update the current value and gradient
+            self.current_gradient = self.function.Diff(self.current_position)
+
+            # Update the B_k matrix for the BFGS method
+            if self.method == "BFGS":
+                s_k = self.current_position - x_old
+                y_k = self.current_gradient - g_old
+                ys = np.dot(y_k, s_k)
+
+                if abs(ys) > 1e-12:
+                    rho_k = 1.0 / ys
+                    I = np.eye(self.function.dimension)
+
+                    term1 = I - rho_k * np.outer(s_k, y_k)
+                    term2 = I - rho_k * np.outer(y_k, s_k)
+                    # H_{k+1} = (I - rho*s*y^T) * H_k * (I - rho*y*s^T) + rho*s*s^T
+                    self.B_k = np.dot(term1, np.dot(self.B_k, term2)) + rho_k * np.outer(s_k, s_k)
+
 
         # If we have reached the maximum number of iterations, we will save the current position as the minimum
         if not self.minimum:
